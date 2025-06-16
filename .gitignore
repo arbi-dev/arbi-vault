@@ -1,0 +1,6 @@
+kms/.terraform/
+*.tfstate*
+*.env
+**/credentials.txt
+**/root-token.txt
+**/recovery-keys.txt
