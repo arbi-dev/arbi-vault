@@ -4,3 +4,8 @@ kms/.terraform/
 **/credentials.txt
 **/root-token.txt
 **/recovery-keys.txt
+client-vault/
+vault.hcl
+vault-setup.md
+master-vault/README-transit-setup.md
+master-vault/REMOTE-VAULT-SETUP.md
