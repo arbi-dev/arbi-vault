@@ -45,10 +45,32 @@ This project provides infrastructure-as-code and automation scripts to deploy Ha
    ```
 
 3. **Access Vault**
+
+   **Option A: Using Vault CLI (if installed)**
    ```bash
    export VAULT_ADDR=http://localhost:8210
    export VAULT_TOKEN=$(cat root-token.txt)
    vault status
+   ```
+
+   **Option B: Using HTTP API (recommended - no CLI required)**
+   ```bash
+   # Check Vault health
+   curl -s http://localhost:8210/v1/sys/health | jq
+
+   # Verify Vault is unsealed
+   curl -s http://localhost:8210/v1/sys/seal-status | jq
+
+   # Write a test secret
+   TOKEN=$(cat root-token.txt)
+   curl -s -H "X-Vault-Token: $TOKEN" \
+     -X POST \
+     -d '{"data":{"username":"admin","password":"secret123"}}' \
+     http://localhost:8210/v1/secret/data/myapp/config | jq
+
+   # Read the secret back
+   curl -s -H "X-Vault-Token: $TOKEN" \
+     http://localhost:8210/v1/secret/data/myapp/config | jq
    ```
 
 ## Configuration
@@ -245,6 +267,36 @@ docker compose logs vault
 # Verify auto-unseal configuration
 curl -s http://localhost:8210/v1/sys/seal-status | jq
 ```
+
+#### Testing Vault Without CLI
+If the `vault` CLI is not installed on your system, use the HTTP API directly:
+
+```bash
+# Load token
+TOKEN=$(cat root-token.txt)
+
+# Check Vault status
+curl -s http://localhost:8210/v1/sys/health | jq
+
+# List secret engines
+curl -s -H "X-Vault-Token: $TOKEN" \
+  http://localhost:8210/v1/sys/mounts | jq
+
+# Write a secret (KV v2 path format: /v1/secret/data/<path>)
+curl -s -H "X-Vault-Token: $TOKEN" \
+  -X POST \
+  -d '{"data":{"key":"value"}}' \
+  http://localhost:8210/v1/secret/data/test | jq
+
+# Read a secret
+curl -s -H "X-Vault-Token: $TOKEN" \
+  http://localhost:8210/v1/secret/data/test | jq '.data.data'
+```
+
+**Important Notes:**
+- KV v2 paths use `/v1/secret/data/<path>` for read/write operations
+- The root token file is written without newlines for easy use
+- The Vault CLI is inside the container at `/vault/bin/vault` if needed
 
 ### Permission Propagation
 Azure RBAC role assignments can take up to 10 minutes to propagate. The scripts include automatic wait times, but manual verification may be needed:

@@ -192,7 +192,7 @@ else
         
         # Save recovery keys and root token
         echo "$INIT_RESPONSE" | jq -r '.recovery_keys[]' > recovery-keys.txt
-        echo "$INIT_RESPONSE" | jq -r '.root_token' > root-token.txt
+        echo "$INIT_RESPONSE" | jq -r '.root_token' | tr -d '\n' > root-token.txt
         
         print_success "Recovery keys saved to recovery-keys.txt"
         print_success "Root token saved to root-token.txt"
