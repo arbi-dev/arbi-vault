@@ -1,0 +1,20 @@
+services:
+  vault:
+    image: hashicorp/vault:latest
+    container_name: vault-autounseal
+    ports:
+      - "8210:8200"
+    volumes:
+      - vault-data:/vault/data
+      - ./vault.hcl:/vault/config/vault.hcl:ro
+    environment:
+      - VAULT_ADDR=http://0.0.0.0:8200
+      - VAULT_API_ADDR=http://0.0.0.0:8200
+    command: ["sh", "-c", "chown -R vault:vault /vault/data && vault server -config=/vault/config/vault.hcl"]
+    cap_add:
+      - IPC_LOCK
+    restart: unless-stopped
+
+volumes:
+  vault-data:
+    driver: local
